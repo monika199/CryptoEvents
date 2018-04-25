@@ -136,11 +136,8 @@ def explain_anomalies(y, window_size, sigma=1.0):
 	avg = moving_average(y, window_size).tolist()
 	residual = y - avg
     # Calculate the variation in the distribution of the residual
-    std = np.std(residual)
-    return {'standard_deviation': round(std, 3),
-            'anomalies_dict': collections.OrderedDict([(index, y_i) for
-                                                       index, y_i, avg_i in izip(count(), y, avg)
-              if (y_i > avg_i + (sigma*std)) | (y_i < avg_i - (sigma*std))])}
+	std = np.std(residual)
+	return {'standard_deviation': round(std, 3),'anomalies_dict': collections.OrderedDict([(index, y_i) for index, y_i, avg_i in izip(count(), y, avg) if (y_i > avg_i + (sigma*std)) | (y_i < avg_i - (sigma*std))])}
 
 def explain_anomalies_rolling_std(y, window_size, sigma=1.0):
 	avg = moving_average(y, window_size)
