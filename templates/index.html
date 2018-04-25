@@ -344,13 +344,17 @@
                 i=1;
               }
               console.log('#sample'+i)
-              clone=$("#sample"+i).clone()
-              clone.removeAttr('id')
-              clone.removeAttr('style')
-              clone.find('h4')[0].innerHTML='<a href='+response[j]['link']+' target="blank">'+response[j]['title']+'</a>'
-              clone.find('p')[0].innerHTML=response[j]['content'].split(/\s+/).slice(0,50).join(" ")+'...';
-              clone.find('cite')[0].innerHTML='- '+response[j]['time']
-              $('#timeline').append(clone)
+              if (response[j]['content'] != "")
+              {
+	              clone=$("#sample"+i).clone()
+	              clone.removeAttr('id')
+	              clone.removeAttr('style')
+	              clone.find('h4')[0].innerHTML='<a href='+response[j]['link']+' target="blank">'+response[j]['title']+'</a>'
+
+	              clone.find('p')[0].innerHTML=response[j]['content'].split(/\s+/).slice(0,50).join(" ")+'...';
+	              clone.find('cite')[0].innerHTML='- '+response[j]['time']
+	              $('#timeline').append(clone)
+	          }
             }
         }});
    
