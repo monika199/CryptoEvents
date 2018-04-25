@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8"/>
+
+<head>
+  <!-- Plotly.js -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/style.css') }}">
+<!-- <script src="js/main.js"></script> -->
+</head>
+
+<body>
+  <div class="container">
+
+<header>
+   <h1>CryptoEvents</h1>
+</header>
+  
+<nav>
+  <ul>
+  <a href="/trends"><button name="graph" id="graph" type="button">CryptoTrends</button></a>
+  </ul>
+
+
+ <div id='form'>
+  <form class="form-time" action="/time" method="POST" role="form">
+   <div class="select-box">
+  <label for="time" class="label time"><span class="label-desc">Mode</span> </label>
+    <select id="time" name="time" class="select">
+      <option value="daily">Daily</option>
+      <option value="intra">Intraday</option>
+    </select>
+    </div>
+  </form>
+  </div>
+
+  </nav>
+
+  <article>
+ <div id="myDiv"></div>
+  <script>
+
+  $("select").on("click" , function() {
+  
+  $(this).parent(".select-box").toggleClass("open");
+  
+});
+
+$(document).mouseup(function (e)
+{
+    var container = $(".select-box");
+
+    if (container.has(e.target).length === 0)
+    {
+        container.removeClass("open");
+    }
+});
+// $(function() {
+//     $('button').click(function() {
+//         // var user = $('#txtUsername').val();
+//         // var pass = $('#txtPassword').val();
+//         console.log("Called!!")
+//         $.ajax({
+//             url: '/trends',
+//             data: $('form').serialize(),
+//             type: 'POST',
+//             success: function(response) {
+//                 console.log(response);
+//             },
+//             error: function(error) {
+//                 console.log(error);
+//             }
+//         });
+//     });
+// });
+  $(function() {
+    $("#time").on("change",function(){
+      console.log($('#time').val());
+      var time = $('#time').val();
+      var selection = $(this).find("option:selected").text(),
+      labelFor = $(this).attr("id"),
+      label = $("[for='" + labelFor + "']");
+    
+  label.find(".label-desc").html(selection);
+    
+      // alert('I clicked it');
+        $.ajax({
+          url: '/time',
+          data: $('form').serialize(),
+          type: 'POST',
+          success: function(response) {
+                var colorscaleValue = [
+                    [0, '#3D9970'],
+                    [1, '#001f3f']
+                ];
+                var op = JSON.parse(response);
+                op['colorscale']=colorscaleValue
+                op['zmin']=0.0
+                op['zmax']
+                var data=[];
+                data.push(op)
+                Plotly.newPlot('myDiv', data);
+                console.log(data);
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    });
+  });
+  
+
+
+  </script>
+</article>
+</div>
+
+</body>
+
+</html>

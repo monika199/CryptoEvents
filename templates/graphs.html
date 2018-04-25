@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8"/>
+
+<head>
+  <!-- Plotly.js -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/style.css') }}">
+<!-- <script src="js/main.js"></script> -->
+</head>
+
+<body>
+  <div class="container">
+
+<header>
+   <h1>CryptoEvents</h1>
+</header>
+  
+<nav>
+  <ul>
+  <ul>
+  <a href="/home"><button name="graph" id="graph" type="button">CryptoTrends</button></a>
+  </ul>
+  </ul>
+
+  
+  
+  <form class="form-time" action="/time" method="POST" role="form">
+    <select id="time" name="time" class="form-control">
+      <option value="select time">Select Time</option>
+      <option value="daily">Daily</option>
+      <option value="intra">Intraday</option>
+    </select>
+    <select id="cur" name="cur" class="form-control">
+      <option value="select cur"> Select Currency</option>
+      <option value="BTC">BTC</option>
+      <option value="ETH">ETH</option>
+      <option value="DASH">DASH</option>
+      <option value="ETC">ETC</option>
+    </select>
+  </form>
+
+  </nav>
+  <article>
+  <div id="myDiv"></div>
+  <script>
+  $(function() {
+    $("#time").add("#cur").on("change",function(){
+      var time = $('#time').val();
+      var cur = $('#cur').val();
+      if (cur!='select cur'){
+      // alert('I clicked it');
+        $.ajax({
+          url: '/basic',
+          data: $('form').serialize(),
+          type: 'POST',
+          success: function(response) {
+                console.log(response);
+                var op = JSON.parse(response);
+                var layout = {
+      title: 'Basic Time Series',
+};
+
+                Plotly.newPlot('myDiv',op, );
+
+                // Plotly.newPlot('myDiv', op);
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+      }
+    });
+
+  });
+  
+  
+
+//     var data = [
+//   {
+//     z: [[1, 20, 30, 50, 1], [20, 1, 60, 80, 30], [30, 60, 1, -10, 20]],
+//     x: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+//     y: ['Morning', 'Afternoon', 'Evening'],
+//     type: 'heatmap'
+//   }
+// ];
+
+// Plotly.newPlot('myDiv', data);
+  </script>
+</article>
+</div>
+</body>
+</html>
