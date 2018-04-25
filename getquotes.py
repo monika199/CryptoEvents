@@ -1,3 +1,4 @@
+from __future__ import division
 
 API_KEY="Q62XADJ7WXO7GHVC"
 
@@ -6,7 +7,7 @@ import json
 import urllib
 import pandas as pd
 import time
-from __future__ import division
+
 from itertools import izip, count
 import matplotlib.pyplot as plt
 # import plotly.plotly as py
