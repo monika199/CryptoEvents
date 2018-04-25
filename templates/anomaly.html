@@ -87,7 +87,7 @@
                             <!-- /input-group -->
                         </li>
                         <li>
-                            <a href="/anomaly" id="anomaly"><i class="fa fa-dashboard fa-fw"></i> Detect Anomaly</a>
+                            <a href="/home" id="home"><i class="fa fa-dashboard fa-fw"></i> Trends </a>
                         </li>
                         <li><div class="panel panel-default" style="width: 90%; margin:auto;">
                             <div class="panel-heading">
@@ -96,10 +96,10 @@
                                         <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"> Select CryptoCurrencies<span class="caret"></span></button>
                                         <!-- <div class="dropdown-menu-multiple"> -->
                                         <ul class="dropdown-menu" id="cur">
-                                          <li><a href="#" class="small" data-value="BTC" tabIndex="-1"><input type="checkbox" id="1"/>&nbsp;BTC</a></li>
-                                          <li><a href="#" class="small" data-value="ETH" tabIndex="-1"><input type="checkbox"/>&nbsp;ETH</a></li>
-                                          <li><a href="#" class="small" data-value="ETC" tabIndex="-1"><input type="checkbox"/>&nbsp;ETC</a></li>
-                                          <li><a href="#" class="small" data-value="DASH" tabIndex="-1"><input type="checkbox"/>&nbsp;DASH</a></li>
+                                          <li><a href="#" class="small" data-value="BTC" tabIndex="-1"><input type="checkbox" id="BTC"/>&nbsp;BTC</a></li>
+                                          <li><a href="#" class="small" data-value="ETH" tabIndex="-1"><input type="checkbox" id="ETH"/>&nbsp;ETH</a></li>
+                                          <li><a href="#" class="small" data-value="ETC" tabIndex="-1"><input type="checkbox" id="ETC"/>&nbsp;ETC</a></li>
+                                          <li><a href="#" class="small" data-value="DASH" tabIndex="-1"><input type="checkbox" id="DASH"/>&nbsp;DASH</a></li>
                                           <!-- <li><a href="#" class="small" data-value="option5" tabIndex="-1"><input type="checkbox"/>&nbsp;Option 5</a></li>
                                           <li><a href="#" class="small" data-value="option6" tabIndex="-1"><input type="checkbox"/>&nbsp;Option 6</a></li> -->
                                         </ul>
@@ -130,7 +130,7 @@
                 <div class="col-lg-7">
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <i class="fa fa-bar-chart-o fa-fw"></i> Cryto Time Series
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Anomaly Plot
                             <div class="pull-right">
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
@@ -138,7 +138,7 @@
                                         <span class="caret"></span>
                                     </button>
                                     <!-- <div class="dropdown-menu-single"> -->
-                                    <ul class="dropdown-menu" id="time_range" role="menu">
+                                    <ul class="dropdown-menu" id="arg" role="menu">
                                         <li><a data-value="intra" href="#"><input type="checkbox" id="intra"/>Intraday</a>
                                         </li>
                                         <li><a data-value="daily" href="#"><input type="checkbox" id="daily"/>Daily</a>
@@ -166,7 +166,6 @@
                         <!-- /.panel-heading -->
                         <div class="panel-body">
                             <ul class="timeline" id="timeline">
-
                             </ul>
                         </div>
                         <!-- /.panel-body -->
@@ -177,9 +176,9 @@
                 <div class="col-lg-5">
                     
                     <!-- /.panel -->
-                    <div class="panel panel-default">
+                   <!--  <div class="panel panel-default">
                         <div class="panel-heading">
-                            <i class="fa fa-bar-chart-o fa-fw"></i> Correlation Heatmap 
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Heatmap
                         </div>
                         <div class="panel-body">
                            <div id="myDiv"></div>
@@ -187,7 +186,7 @@
                                 
                                 </script>
                             
-                        </div>
+                        </div> -->
                       
                     </div>
                     <!-- /.panel -->
@@ -205,7 +204,7 @@
     </div>
     <!-- /#wrapper -->
     <div class="loaderDiv"></div>
-      <li class="timeline-inverted" id='sample1'  style="visibility:hidden;">
+     <li class="timeline-inverted" id='sample1'  style="visibility:hidden;">
                                     <div class="timeline-badge info"><i class="fa fa-check"></i>
                                     </div>
                                     <div class="timeline-panel">
@@ -240,7 +239,6 @@
                                         </div>
                                     </div>
                                 </li>
-                                
 
     <!-- jQuery -->
     <script src="{{ url_for('static',filename='scripts/jquery.min.js') }}"></script>
@@ -259,15 +257,16 @@
     <!-- Custom Theme JavaScript -->
     <script src="{{ url_for('static',filename='scripts/sb-admin-2.js') }}"></script>
     <script>
-    document.getElementById("1").checked = true;
-    document.getElementById("daily").checked = true;
+    document.getElementById("BTC").checked = true;
+    // document.getElementById("daily").checked = true;
     var cur = ["BTC"];
     var time_range = ["daily"]
+    var date = 0
     // var active = "time"
-    function time_series() {
+    function anomaly() {
         console.log("hey")
         console.log(cur)
-        console.log(time_range)
+        // console.log(time_range)
         $.ajax({
           url: '/basic',
           data: JSON.stringify({'cur[]':cur, 'time_range[]':time_range}),
@@ -282,43 +281,50 @@
                 $(".loaderDiv").hide();
                 console.log(response);
                 // var op = JSON.parse(response);
-                // var layout = response['layout'];
-            var data = response['traces'];
-            console.log("here")
-            // Plotly.plot('chart',data,layout);
+                var anomaly = response['anomaly'];
+                var s = Array(anomaly['x'].length).fill(2)
+                var c = Array(anomaly['x'].length).fill('#000000')
+                // console.log(anomaly['x'].length)
+                var s2 = Array(anomaly['x'].length).fill(5)
+                var c2 = Array(anomaly['x'].length).fill('#000000')
+                for (i = 0; i < anomaly['x_anomaly'].length; i++) { 
+                    s2[anomaly['x_anomaly'][i]] = 10;
+                    c2[anomaly['x_anomaly'][i]] = '#ff0000';
+                }
+                var trace1 = {y: anomaly['y'], x:anomaly['x'], mode:'markers', marker: {size: s, color: c}, name: 'Data' }
+                var trace2 = {y: anomaly['y'], x:anomaly['x'], mode:'markers', marker: {size: s2, color: c2}, hoverinfo: 'none',
+  showlegend: false}
+                var trace3 = {y: anomaly['y_av'], x:anomaly['x'], mode:'line', name: 'Mean' }
+                var data = [trace1,trace2, trace3];
+
                 var layout = {
-                autosize: false,
-                  width: 500,
-                  height: 500,
-                  margin: {
-                    l: 50,
-                    r: 50,
-                    b: 200,
-                    t: 50,
-                    pad: 4
-                  },
-                  xaxis: {autorange: true, rangeslider: {}, type: 'date'}, 
-          font: {
-            family: 'Courier New, monospace',
-            size: 10,
-            color: '#7f7f7f'
-          }
-        };
+                    xaxis: {autorange: true, rangeslider: {}, type: 'date'},
+                  // title: 'Scatter Plot with a Color Dimension'
+                };
 
-                Plotly.newPlot('chart',data,layout);
+                Plotly.newPlot('chart', data, layout);
 
-                // Plotly.newPlot('myDiv', op);
-            },
-            error: function(error) {
-                console.log(error);
+                var myPlot = document.getElementById('chart')
+
+                myPlot.on('plotly_click', function(data){
+                  console.log(data.points[0].x,data.points[0].y)
+                  date = data.points[0].x
+                  articles.call();
+                });
+
+                                // Plotly.newPlot('myDiv', op);
+                },
+        error: function(error) {
+            console.log(error);
             }
+
         });
       }
-      
     function articles() {
-        
+        console.log("articles called")
+        console.log(cur)
         $.ajax({ url: "/get_articles",
-        data: JSON.stringify({'cur[]':['none'], 'time[]':[0]}),
+        data: JSON.stringify({'cur[]':[cur], 'time[]':[date]}),
           datatype : 'json',
           contentType: 'application/json',
           crossDomain: true,
@@ -329,6 +335,7 @@
             },
         success: function(response){
             $(".loaderDiv").hide();
+            document.getElementById("timeline").innerHTML = "";
             i=2;
             response=JSON.parse(response)
           for (var j = 0; j < response.length; j++) {
@@ -355,92 +362,39 @@
         }});
    
     }
-
-    $( '#cur a' ).on( 'click', function( event ) {
-  // console.log(event.currentTarget)
-        var $target = $( event.currentTarget ),
-            val = $target.attr( 'data-value' ),
-            $inp = $target.find( 'input' ),
-            idx;
-        if ( ( idx = cur.indexOf( val ) ) > -1 ) {
-           cur.splice( idx, 1 );
-           setTimeout( function() { $inp.prop( 'checked', false ) }, 0);
-        } else {
-           cur.push( val );
-           setTimeout( function() { $inp.prop( 'checked', true ) }, 0);
-        }
-
-        $( event.target ).blur();
-          
-        console.log( cur );
-        time_series.call();
-        correlation.call();
-        // if (active == "time") {time_series.call();}
-        // else {correlation.call();}
-        return false;
-    });
-
-$( '#time_range a' ).on( 'click', function( event ) {
-  // console.log(event.currentTarget)
+$( '#cur a' ).on( 'click', function( event ) {
+  console.log("getting called")
     var $target = $( event.currentTarget ),
         val = $target.attr( 'data-value' ),
         $inp = $target.find( 'input' ),
         idx;
     // console.log(val)
-    if (Object.keys(time_range).length === 0 ) {
+    if (Object.keys(cur).length === 0 ) {
        // time_range[val] = $inp;
-       time_range.push(val)
+       cur.push(val)
        setTimeout( function() { $inp.prop( 'checked', true ) }, 0);
     } else {
-        loc = time_range[Object.keys(time_range)[0]];
-        // console.log("loc " + loc)
+        loc = cur[Object.keys(cur)[0]];
+        console.log("loc " + loc)
         document.getElementById(loc).checked = false;
-        idx = time_range.indexOf(loc)
-        if (idx>-1) {time_range.splice(idx,1);}
+        idx = cur.indexOf(loc)
+        if (idx>-1) {cur.splice(idx,1);}
         // console.log(time_range)
         setTimeout( function() { $inp.prop( 'checked', true ) }, 0);
         // loc.attr('checked', false);
         // delete time_range.loc
-        time_range.push(val);
-        console.log(time_range)
+        cur.push(val);
+        console.log(cur)
     }
-    time_series.call();
-    correlation.call();
+    anomaly.call();
+    // time_series.call();
+    // correlation.call();
     // if (active == "time") {time_series.call();}
     //     else {correlation.call();}
     // console.log(val);
     return false;
     });
-function correlation() {
-
-        $.ajax({
-          url: '/corr',
-          data: JSON.stringify({'cur[]':cur, 'time_range[]':time_range}),
-          datatype : 'json',
-          contentType: 'application/json',
-          crossDomain: true,
-          type: 'POST',
-          success: function(response) {
-                var colorscaleValue = [
-                    [0, '#3D9970'],
-                    [1, '#001f3f']
-                ];
-                var op = JSON.parse(response);
-                op['colorscale']=colorscaleValue
-                op['zmin']=0.0
-                op['zmax']
-                var data=[];
-                data.push(op)
-                Plotly.newPlot('myDiv', data);
-                console.log(data);
-            },
-            error: function(error) {
-                console.log(error);
-            }
-        });}
-    
-    time_series.call();
-    articles.call();
+    anomaly.call();
 
     </script>
 </body>

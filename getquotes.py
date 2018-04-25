@@ -7,6 +7,7 @@ import json
 import urllib
 import pandas as pd
 import time
+import MySQLdb
 
 from itertools import izip, count
 
@@ -16,46 +17,52 @@ import numpy as np
 import pandas as pd
 import collections
 from random import randint
-
-
+import datetime
+from dateutil import parser
 
 intraday_cache={}
+daily_cache = {}
 def get_quotes_daily(currency_names,time_period=200):
 	print 'daily in getquotes'
 	prices={}
 	retrieved=[]
 	for i  in range(len(currency_names)):
-		print currency_names[i]
-		tries=5
-		try:
-			# import pdb; pdb.set_trace()
-			result=requests.get("https://min-api.cryptocompare.com/data/histoday?fsym="+currency_names[i]+"&tsym=USD&limit="+str(time_period))
-			# print "https://min-api.cryptocompare.com/data/histoday?fsym="+currency_names[i]+"&tsym=USD&limit="+str(time_period)
-			result = result.json()['Data']
-		    # print result
-			ctr=time_period
-			# price=[]
-			prices[currency_names[i]] = []
-			for k in result:
-				if ctr<0:
-					break
-				#import pdb;pdb.set_trace()
-				dic={ 'time': k['time'], 'open': float(k['open']), 'high': float(k['high']), 'low':float(k['low']), 'close':float(k['close']),'volumefrom':float(k['volumefrom']),'volumeto':float(k['volumeto'])}
-				prices[currency_names[i]].append(dic)
-				ctr-=ctr
-			print 'fetched'
-			retrieved.append(currency_names[i])
-			
-			# prices.append(price)
-		except:
-			if tries>0:
-				i=i-1
-				tries-=1
-				continue
-			else:
-				continue 
+		if currency_names[i] not in daily_cache:
+			print currency_names[i]
+			tries=5
+			try:
+				# import pdb; pdb.set_trace()
+				result=requests.get("https://min-api.cryptocompare.com/data/histoday?fsym="+currency_names[i]+"&tsym=USD&limit="+str(time_period))
+				# print "https://min-api.cryptocompare.com/data/histoday?fsym="+currency_names[i]+"&tsym=USD&limit="+str(time_period)
+				result = result.json()['Data']
+			    # print result
+				ctr=time_period
+				# price=[]
+				prices[currency_names[i]] = []
+				for k in result:
+					if ctr<0:
+						break
+					#import pdb;pdb.set_trace()
+					dic={ 'time': datetime.datetime.fromtimestamp(int(k['time'])).strftime('%Y-%m-%d %H:%M:%S'), 'open': float(k['open']), 'high': float(k['high']), 'low':float(k['low']), 'close':float(k['close']),'volumefrom':float(k['volumefrom']),'volumeto':float(k['volumeto'])}
+					prices[currency_names[i]].append(dic)
+					ctr-=ctr
+				print 'fetched'
+				retrieved.append(currency_names[i])
+				prices[currency_names[i]].sort(key=lambda item:item['time'])
+				daily_cache[currency_names[i]]=prices[currency_names[i]]
+				# prices.append(price)
+			except:
+				if tries>0:
+					i=i-1
+					tries-=1
+					continue
+				else:
+					continue 
+		else:
+			prices[currency_names[i]] = daily_cache[currency_names[i]]
 	# import pdb; pdb.set_trace()
 	# print prices
+
 	return prices,retrieved
 
 
@@ -70,6 +77,7 @@ def get_quotes_intraday(currency_names):
 			print currency_names[i]
 			tries=5
 			try:
+
 				result=requests.get("https://www.alphavantage.co/query?function=DIGITAL_CURRENCY_INTRADAY&symbol="+currency_names[i]+"&market=EUR&apikey="+API_KEY+"&extraParams=cryptoevents")
 			# import pdb;pdb.set_trace()
 				result = result.json()['Time Series (Digital Currency Intraday)']
@@ -80,9 +88,14 @@ def get_quotes_intraday(currency_names):
 				for k in result.keys():
 					
 					#import pdb;pdb.set_trace()
-					dic={'time': k, 'price': float(result[k]['1b. price (USD)']), 'volume': float(result[k]['2. volume'])}
+					
+					dt=parser.parse(k)
+					dic={'time': dt.strftime("%y-%m-%d %H:%M:%S "), 'price': float(result[k]['1b. price (USD)']), 'volume': float(result[k]['2. volume'])}
 					prices[currency_names[i]].append(dic)
 				print 'fetched'
+				#import pdb;pdb.set_trace()
+				prices[currency_names[i]].sort(key=lambda item:item['time'])
+
 				# prices.append(price)
 				time.sleep(10)
 				retrieved.append(currency_names[i])
@@ -110,6 +123,10 @@ def get_corr(currency_names=['BTC','XRP','ETC','DASH','LTC','XEM','ETH'], attr='
 		attr='price'
 	else:
 		prices,retrieved=get_quotes_daily(currency_names,days)
+		for x in currency_names:
+			if x not in retrieved and x in daily_cache:
+				prices[x] = daily_cache[x]
+				retrieved.append(x)
 	# print prices
 	attr_prices=[]
 	for k in prices.keys():
@@ -119,7 +136,7 @@ def get_corr(currency_names=['BTC','XRP','ETC','DASH','LTC','XEM','ETH'], attr='
 	
 	df=pd.DataFrame()
 	for i,ar in enumerate(attr_prices):
-		#import pdb;pdb.set_trace()
+		
 		se = pd.Series(ar)
 		# import pdb;pdb.set_trace()
 		df[retrieved[i]] = se
@@ -155,8 +172,8 @@ def explain_anomalies_rolling_std(y, window_size, sigma=1.0):
 	                                                                                       y, avg_list, rolling_std)
           if (y_i > avg_i + (sigma * rs_i)) | (y_i < avg_i - (sigma * rs_i))])}
 
-def plot_results(x, y, window_size, sigma_value=1,
-                 text_xlabel="X Axis", text_ylabel="Y Axis", applying_rolling_std=False):
+def plot_results(x, y, window_size, sigma_value=1.0,
+                 text_xlabel="X Axis", text_ylabel="Y Axis", applying_rolling_std=True):
 	# plt.figure(figsize=(15, 8))
 	# plt.plot(x, y, "k.")
 	y_av = moving_average(y, window_size)
@@ -173,15 +190,53 @@ def plot_results(x, y, window_size, sigma_value=1,
 	    events = explain_anomalies(y, window_size=window_size, sigma=sigma_value)
 
 	x_anomaly = np.fromiter(events['anomalies_dict'].iterkeys(), dtype=int, count=len(events['anomalies_dict']))
+	# print "//////////"
+	# print (type(x_anomaly))
 	y_anomaly = np.fromiter(events['anomalies_dict'].itervalues(), dtype=float,
 	                                        count=len(events['anomalies_dict']))
 	return x, y, y_av, x_anomaly, y_anomaly
-	# print x_anomaly, y_anomaly
-	#     plt.plot(x_anomaly, y_anomaly, "r*", markersize=12)
+	
 
-	#     add grid and lines and enable the plot
-	# plt.grid(True)
-	# plt.show()
-	# get_corr(['BTC','ETH','ETC','DASH','XEM','LTC'])
-# res = get_corr(['BTC','ETH','DASH'])
-# res.to_json()
+def get_article_recommendations(currency='none', time=0, delta=15):
+	#link, content, time, timestamp, title
+	results=[]
+	print 'here'
+	
+	if currency=='none':
+		map=json.load(open('cryptosymbols.json','r'))
+		currencies=['BTC','XRP','ETC','DASH','LTC','XEM','ETH']
+		conn= MySQLdb.connect(host='cs336.ckksjtjg2jto.us-east-2.rds.amazonaws.com', port=3306, user='student', passwd='cs336student', db='CryptoNews', charset='utf8')
+		cur=conn.cursor()
+		query_str=' '.join([x +' ' +map[x] for x in currencies])
+		
+		cur.execute("select * from cryptonews where match (title) against (' %s ' IN BOOLEAN MODE) order by timestamp DESC limit 20" % (query_str))
+		for row in cur:
+			results.append({'link':row[0],'content':row[1],'time':row[3].strftime("%b %d, %Y"),'title':row[4]})
+		return results[:10]
+
+	results=get_results(currency,time,delta)
+	while results==[]:
+		results=get_results(currency,time,delta+60)
+	results.sort(key=lambda item: item[1])
+	#import pdb;pdb.set_trace()
+	results=[{'link':x[0][0],'content':x[0][1],'time':x[0][3].strftime("%b %d, %Y"),'title':x[0][4]} for x in results]
+	return results[:10]
+
+def get_results(currency,time,delta):
+	print 'increment',delta
+	map=json.load(open('cryptosymbols.json','r'))
+	dt=parser.parse(time)
+	past=dt-datetime.timedelta(days=delta)
+	future=dt+datetime.timedelta(days=delta)
+
+	conn= MySQLdb.connect(host='cs336.ckksjtjg2jto.us-east-2.rds.amazonaws.com', port=3306, user='student', passwd='cs336student', db='CryptoNews', charset='utf8')
+	cur=conn.cursor()
+	# import pdb; pdb.set_trace()
+	query_str=currency[0]+' '+map[currency[0]].capitalize()
+	cur.execute("select * from cryptonews where match (title) against (' %s ' IN BOOLEAN MODE) and timestamp between '%s' and '%s'" % (query_str,past, future))
+	results=[]
+
+	for row in cur:
+		results.append((row,(abs((dt - row[3])).days)))
+	conn.close()
+	return results
