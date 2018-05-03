@@ -78,6 +78,7 @@
                        
                         <li>
                             <a href="/home" id="home"><i class="fa fa-dashboard fa-fw"></i> Trends </a>
+                            <a href="/readme" id="readme"><i class="fa fa-dashboard fa-fw"></i> Read Me </a>
                         </li>
                         <li><div class="panel panel-default" style="width: 90%; margin:auto;">
                             <div class="panel-heading">
@@ -126,12 +127,12 @@
                         <div class="panel-heading">
                             <i class="fa fa-bar-chart-o fa-fw"></i> Anomaly Plot
                             <div class="pull-right">
-                                <div class="btn-group">
+                                <!-- <div class="btn-group">
                                     <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
                                         Actions
                                         <span class="caret"></span>
                                     </button>
-                                    <!-- <div class="dropdown-menu-single"> -->
+                                   <div class="dropdown-menu-single"> 
                                     <ul class="dropdown-menu" id="arg" role="menu">
                                         <li><a data-value="intra" href="#"><input type="checkbox" id="intra"/>Intraday</a>
                                         </li>
@@ -139,7 +140,7 @@
                                         </li>
                                         
                                     </ul>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                         <!-- /.panel-heading -->
@@ -155,7 +156,7 @@
                     <!-- /.panel -->
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <i class="fa fa-clock-o fa-fw"></i> Responsive Timeline
+                            <i class="fa fa-clock-o fa-fw"></i> News Timeline
                         </div>
                         <!-- /.panel-heading -->
                         <div class="panel-body">
@@ -292,7 +293,9 @@
                 var data = [trace1,trace2, trace3];
 
                 var layout = {
-                    xaxis: {autorange: true, rangeslider: {}, type: 'date'},
+                   yaxis: {title: 'Percentage Change'},
+                    title: 'Anomalies in Trend over past 200 Days in '+cur[0],
+                    xaxis: {title: 'Time',autorange: true, rangeslider: {}, type: 'date'},
                   // title: 'Scatter Plot with a Color Dimension'
                 };
 

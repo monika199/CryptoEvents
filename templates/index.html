@@ -22,7 +22,8 @@
 
     <!-- Morris Charts CSS -->
     <!-- <link href="{{ url_for('static',filename='styles/morris.css') }}" rel="stylesheet"> -->
-
+<link href="https://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed' rel='stylesheet' type='text/css'>
     <!-- Custom Fonts -->
     <link href="{{ url_for('static',filename='styles/font-awesome.min.css') }}" rel="stylesheet" type="text/css">
     <link href="{{ url_for('static',filename='styles/style.css') }}" rel="stylesheet" type="text/css">
@@ -77,7 +78,8 @@
                     <ul class="nav" id="side-menu">
                         
                         <li>
-                            <a href="/anomaly" id="anomaly"><i class="fa fa-dashboard fa-fw"></i> Detect Anomaly</a>
+                            <a href="/anomaly" id="anomaly"><i class="fa fa-dashboard fa-fw"></i>Detect Anomaly</a>
+                            <a href="/readme" id="readme"><i class="fa fa-dashboard fa-fw"></i>Read Me</a>
                         </li>
                         <li><div class="panel panel-default" style="width: 90%; margin:auto;">
                             <div class="panel-heading">
@@ -155,7 +157,7 @@
                     <!-- /.panel -->
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <i class="fa fa-clock-o fa-fw"></i> Responsive Timeline
+                            <i class="fa fa-clock-o fa-fw"></i> News Timeline
                         </div>
                         <!-- /.panel-heading -->
                         <div class="panel-body">
@@ -173,10 +175,15 @@
                     <!-- /.panel -->
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <i class="fa fa-bar-chart-o fa-fw"></i> Correlation Heatmap 
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Complementary Chart 
                         </div>
                         <div class="panel-body">
-                           <div id="myDiv"></div>
+                           <div id="myDiv">
+                             <!-- <a href="#" id="tag_sample" rel='1' style="visibility: hidden;"><span>Currency name</span></a> -->
+                           </div>
+                           <div id="myDiv2">
+                             
+                           </div>
                                 <script>
                                 
                                 </script>
@@ -198,7 +205,16 @@
 
     </div>
     <!-- /#wrapper -->
+
+<!--     <div class="tag">
+      <div id="tagcloud" >
+        <a href="#" id="tag_sample" rel='1' style="visibility: hidden;"><span>Currency name</span></a>
+      </div>
+    </div> -->
+
+
     <div class="loaderDiv"></div>
+    <a href="#" id="tag_sample" rel='1' style="visibility: hidden;"><span>Currency name</span></a>
       <li class="timeline-inverted" id='sample1'  style="visibility:hidden;">
                                     <div class="timeline-badge info"><i class="fa fa-check"></i>
                                     </div>
@@ -238,6 +254,7 @@
 
     <!-- jQuery -->
     <script src="{{ url_for('static',filename='scripts/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='scripts/tagcloud.js') }}"></script>
 
     <!-- Bootstrap Core JavaScript -->
     <script src="{{ url_for('static',filename='scripts/bootstrap.min.js') }}"></script>
@@ -259,9 +276,7 @@
     var time_range = ["daily"]
     // var active = "time"
     function time_series() {
-        console.log("hey")
-        console.log(cur)
-        console.log(time_range)
+        
         $.ajax({
           url: '/basic',
           data: JSON.stringify({'cur[]':cur, 'time_range[]':time_range}),
@@ -270,20 +285,34 @@
           crossDomain: true,
           type: 'POST',
           beforeSend: function() {
+
             $(".loaderDiv").show();
             },
           success: function(response) {
                 $(".loaderDiv").hide();
-                console.log(response);
+                
                 // var op = JSON.parse(response);
                 // var layout = response['layout'];
             var data = response['traces'];
-            console.log("here")
+           
+            // Plotly.plot('chart',data,layout);
+                 if(!time_range.includes("daily"))
+                {
+                    title='Pricing Trends In Percentage Gain/Loss over last 24 Hours';
+                     $('#myDiv2').append("<h4 class='tagcloudtags'>Tag Cloud</h4>")
+                }
+            else
+            {
+                title='Pricing Trends In Percentage Gain/Loss over last 200 Days'
+            }
+            var data = response['traces'];
+             
             // Plotly.plot('chart',data,layout);
                 var layout = {
                 autosize: false,
                   width: 700,
                   height: 500,
+                  title:title,
                   margin: {
                     l: 50,
                     r: 50,
@@ -291,17 +320,61 @@
                     t: 50,
                     pad: 4
                   },
-                  xaxis: {autorange: true, rangeslider: {}, type: 'date'}, 
-          font: {
-            family: 'Courier New, monospace',
-            size: 10,
-            color: '#7f7f7f'
-          }
-        };
-
+                  yaxis: {title: 'Percentage Change'},
+                  xaxis: {title: 'Time', autorange: true, rangeslider: {}, type: 'date'}, 
+                  
+                };
                 Plotly.newPlot('chart',data,layout);
+                var box_traces = []
+                // var myNode = document.getElementById("myDiv2");
+                // while (myNode.firstChild) {
+                //     myNode.removeChild(myNode.firstChild);
+                // }
+                $('.tagcloudtags').remove()
+                for (var i=0; i<data.length; i++)
+                {
+                  if (time_range.includes("daily"))
+                  {
+                    var trace = {y:data[i]['y'], type:"box", name: data[i]['name']};
+                    box_traces.push(trace)
+                  }
+                  else
+                  {
+                    clone = $('#tag_sample').clone()
+                    clone.removeAttr('style')
+                    clone.removeAttr('id')
+                    clone.removeAttr('rel')
+                    
+                    clone.attr({id: data[i]['name']+'tagcloud', rel: data[i]['diff'], class: 'tagcloudtags'})
+                    clone.css({"color":"#ffffff","margin-right":5});
+                    clone.find('span')[0].innerHTML=data[i]['name']+" ("+data[i]['diff'].toFixed(2)+"%)";
+                    $('#myDiv2').append(clone)
+                  }
+                }
+                if (time_range.includes("daily"))
+                {
+                  $("#myDiv").show();
+                  var layout = {
+                    title:'Box Plot',
+                  yaxis: {title: 'Percentage Change'},
+                  Plotly.newPlot('myDiv',box_traces,layout);
+                  articles.call();
+                }
+                else
+                {
+                  $("#myDiv").hide();
+                   $.fn.tagcloud.defaults = {
+                    size: {start: 20, end: 30, unit: 'px'},
+                    color: {start: '#ff0000', end: '#00ff00'}
+                  };
 
-                // Plotly.newPlot('myDiv', op);
+                  $(function () {
+                    $('#myDiv2 a').tagcloud();
+                  });
+                  var min = response['min'];
+                  var max = response['max'];
+                  articles.call(this,[String(min),String(max)],[0])
+                }
             },
             error: function(error) {
                 console.log(error);
@@ -309,10 +382,17 @@
         });
       }
       
-    function articles() {
-        
+    function articles(cur_arg,time_arg) {
+        if (time_range.includes("daily"))
+        {
+            var send_data = JSON.stringify({'cur[]':['none'], 'time[]':[0]})
+        }
+        else
+        {
+            var send_data = JSON.stringify({'cur[]':[cur_arg], 'time[]':[0]})
+        }
         $.ajax({ url: "/get_articles",
-        data: JSON.stringify({'cur[]':['none'], 'time[]':[0]}),
+        data: send_data,
           datatype : 'json',
           contentType: 'application/json',
           crossDomain: true,
@@ -323,8 +403,10 @@
             },
         success: function(response){
             $(".loaderDiv").hide();
+            document.getElementById("timeline").innerHTML = "";
             i=2;
             response=JSON.parse(response)
+            console.log(response)
           for (var j = 0; j < response.length; j++) {
                 
                 //Do something
@@ -337,12 +419,13 @@
               {
                 i=1;
               }
-              console.log('#sample'+i)
+               // $('.articlesclass').remove()
               if (response[j]['content'] != "")
               {
 	              clone=$("#sample"+i).clone()
 	              clone.removeAttr('id')
 	              clone.removeAttr('style')
+                  // clone.attr({class:'articlesclass'})
 	              clone.find('h4')[0].innerHTML='<a href='+response[j]['link']+' target="blank">'+response[j]['title']+'</a>'
 
 	              clone.find('p')[0].innerHTML=response[j]['content'].split(/\s+/).slice(0,50).join(" ")+'...';
@@ -355,7 +438,6 @@
     }
 
     $( '#cur a' ).on( 'click', function( event ) {
-  // console.log(event.currentTarget)
         var $target = $( event.currentTarget ),
             val = $target.attr( 'data-value' ),
             $inp = $target.find( 'input' ),
@@ -370,43 +452,31 @@
 
         $( event.target ).blur();
           
-        console.log( cur );
+     
         time_series.call();
-        correlation.call();
+        // correlation.call();
         // if (active == "time") {time_series.call();}
         // else {correlation.call();}
         return false;
     });
-
 $( '#time_range a' ).on( 'click', function( event ) {
-  // console.log(event.currentTarget)
     var $target = $( event.currentTarget ),
         val = $target.attr( 'data-value' ),
         $inp = $target.find( 'input' ),
         idx;
-    // console.log(val)
     if (Object.keys(time_range).length === 0 ) {
-       // time_range[val] = $inp;
        time_range.push(val)
        setTimeout( function() { $inp.prop( 'checked', true ) }, 0);
     } else {
         loc = time_range[Object.keys(time_range)[0]];
-        // console.log("loc " + loc)
         document.getElementById(loc).checked = false;
         idx = time_range.indexOf(loc)
         if (idx>-1) {time_range.splice(idx,1);}
-        // console.log(time_range)
         setTimeout( function() { $inp.prop( 'checked', true ) }, 0);
-        // loc.attr('checked', false);
-        // delete time_range.loc
         time_range.push(val);
-        console.log(time_range)
+        
     }
     time_series.call();
-    correlation.call();
-    // if (active == "time") {time_series.call();}
-    //     else {correlation.call();}
-    // console.log(val);
     return false;
     });
 function correlation() {
@@ -430,7 +500,7 @@ function correlation() {
                 var data=[];
                 data.push(op)
                 Plotly.newPlot('myDiv', data);
-                console.log(data);
+               
             },
             error: function(error) {
                 console.log(error);

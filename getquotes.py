@@ -97,7 +97,7 @@ def get_quotes_intraday(currency_names):
 				prices[currency_names[i]].sort(key=lambda item:item['time'])
 
 				# prices.append(price)
-				time.sleep(10)
+				time.sleep(5)
 				retrieved.append(currency_names[i])
 				intraday_cache[currency_names[i]]=prices[currency_names[i]]
 			except:
@@ -201,10 +201,14 @@ def get_article_recommendations(currency='none', time=0, delta=15):
 	#link, content, time, timestamp, title
 	results=[]
 	print 'here'
-	
-	if currency=='none':
+	print time
+	if currency=='none' or time==0:
 		map=json.load(open('cryptosymbols.json','r'))
-		currencies=['BTC','XRP','ETC','DASH','LTC','XEM','ETH']
+		if currency == 'none':
+			currencies=['BTC','XRP','ETC','DASH','LTC','XEM','ETH']
+		else:
+			currencies = currency
+		print currencies
 		conn= MySQLdb.connect(host='cs336.ckksjtjg2jto.us-east-2.rds.amazonaws.com', port=3306, user='student', passwd='cs336student', db='CryptoNews', charset='utf8')
 		cur=conn.cursor()
 		query_str=' '.join([x +' ' +map[x] for x in currencies])
@@ -212,6 +216,7 @@ def get_article_recommendations(currency='none', time=0, delta=15):
 		cur.execute("select * from cryptonews where match (title) against (' %s ' IN BOOLEAN MODE) order by timestamp DESC limit 20" % (query_str))
 		for row in cur:
 			results.append({'link':row[0],'content':row[1],'time':row[3].strftime("%b %d, %Y"),'title':row[4]})
+		# print results
 		return results[:10]
 
 	results=get_results(currency,time,delta)
@@ -220,6 +225,7 @@ def get_article_recommendations(currency='none', time=0, delta=15):
 	results.sort(key=lambda item: item[1])
 	#import pdb;pdb.set_trace()
 	results=[{'link':x[0][0],'content':x[0][1],'time':x[0][3].strftime("%b %d, %Y"),'title':x[0][4]} for x in results]
+
 	return results[:10]
 
 def get_results(currency,time,delta):
