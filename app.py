@@ -14,6 +14,9 @@ def home():
 @app.route("/anomaly")
 def anomaly():
 	return render_template("anomaly.html")
+@app.route("/readme")
+def readme():
+	return render_template("readme.html")
 @app.route("/trends")
 def trends():
 	return render_template("graphs.html")
