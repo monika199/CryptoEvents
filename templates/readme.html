@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>CryptoEvents</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="{{ url_for('static',filename='styles/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- MetisMenu CSS -->
+    <link href="{{ url_for('static',filename='styles/metisMenu.min.css') }}" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static',filename='styles/sb-admin-2.css') }}" rel="stylesheet">
+
+    <!-- Morris Charts CSS -->
+    <!-- <link href="{{ url_for('static',filename='styles/morris.css') }}" rel="stylesheet"> -->
+
+    <!-- Custom Fonts -->
+    <link href="{{ url_for('static',filename='styles/font-awesome.min.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ url_for('static',filename='styles/style.css') }}" rel="stylesheet" type="text/css">
+<style>
+.timeline-body{
+    overflow: hidden;
+}
+.loaderDiv {
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+   border-top: 16px solid blue;
+ border-right: 16px solid green;
+ border-bottom: 16px solid red;
+ border-left: 16px solid pink;
+
+  width: 70px;
+  height: 70px;
+  position: absolute;
+  top: 50%;
+  left:40%;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+    <div id="wrapper">
+
+                 <!-- /.navbar-top-links -->
+
+            <div class="navbar-default sidebar" role="navigation">
+                <div class="sidebar-nav navbar-collapse">
+                    <ul class="nav" id="side-menu">
+                        
+                        <li>
+                            <a href="/home" id="home"><i class="fa fa-dashboard fa-fw"></i> Trends </a>
+                            <a href="/anomaly" id="readme"><i class="fa fa-dashboard fa-fw"></i> Detect Anomaly </a>
+                        </li>
+                       
+                    </ul>
+                </div>
+                <!-- /.sidebar-collapse -->
+            </div>
+            <!-- /.navbar-static-side -->
+        </nav>
+
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">CryptoEvents</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+           
+                
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-7">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Read Me
+                            <div class="pull-right">
+                                <!-- <div class="btn-group">
+                                    <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                                        Actions
+                                        <span class="caret"></span>
+                                    </button>
+                                   <div class="dropdown-menu-single"> 
+                                    <ul class="dropdown-menu" id="arg" role="menu">
+                                        <li><a data-value="intra" href="#"><input type="checkbox" id="intra"/>Intraday</a>
+                                        </li>
+                                        <li><a data-value="daily" href="#"><input type="checkbox" id="daily"/>Daily</a>
+                                        </li>
+                                        
+                                    </ul>
+                                </div> -->
+                            </div>
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+                            <h3>Trends Page</h3>
+                        <span> This page is meant for a global analysis and outlier detection by comparing multiple currencies. It lets you compare the trends followed by the currencies in the following modes, which can be selected using the <u>Actions Dropdown</u> :<br>
+                        <h4>Daily</h4>
+                        <ul>
+                        <li>In this mode, user can visualize the pricing trends of the currencies in order to visually compare the ups and downs of each currency in the <b>last 200 days</b>.</li>
+                        <li>The prices are <b>normalized</b>, that is, shifted to reflect the starting price as the base price, and all other values are percentage gain or loss with respect to this starting price.</li>
+                        <li>Complementary to this chart is the Quantile chart which shows <b>summary statistics</b> about the percentage gain/loss, such as the maximum, minimum, median percentage gain/loss.</li>
+                        <li>The News panel shows latest news about all currencies.</li>
+                        </ul>
+                        <h4>Intraday</h4>
+                        <ul>
+                        <li>In this mode, the user can visualize the intraday pricing trends based on price data in the <b>last 24 hours</b> approximately.</li>
+                        <li>The prices are <b>normalized</b>, that is, shifted to reflect the starting price as the base price, and all other values are percentage gain or loss with respect to this starting price, so that the user can effectively compare two currencies trending at drastically different price scales.</li>
+                        <li>Complementary to this chart is the <b>Tag Cloud</b> which color codes the currencies in a gradient from <font style='background-color:green' color='white'>&nbsp;green&nbsp;</font> to <font style='background-color:red' color='white'>&nbsp;red&nbsp;</font> along with the percentage gain/loss.</li>
+                        <li>The brightest green in a set indicates the currency with the highest percentage gain in the last 24 hours, and the darkest red indicates least gain, with the intermediate colors being extrapolated similarly.</li>
+                        <li>The News panel shows latest news about the currencies <b>at both the extremes of the tag cloud</b> since these currencies can be assumed to be showing anomalous behavior as compared to others in the set.</li>
+                        </ul>
+                        </span>
+
+                        <h3>Anomalies Page</h3>
+                        <span><ul>
+                        <li>This page lets you detect anomalies locally within the trend of a single currency in the <b>past 200 days</b>.</li>
+                        <li>Anomalies are detected using a <b>moving average algorithm</b> which acts as a low pass filter, thus ignoring local volatility and focussing on a global trend, and are highlighted in <font color='red'>red</font>.</li>
+                        <li>The <b>anomalies are clickable</b>, and on clicking, news articles about that currency ordered by closeness to the corresponding time, will be displayed.</li>
+                        </ul></span>
+
+
+                        <h3>Some Unreliabilities</h3>
+                        <span><ul>
+                        <li>Since our focus is on enabling the user to see the data as real-time as possible, we are not relying on any inmemory data structure to store the prices.</li>
+                        <li>This makes the application highly reliant upon APIs which sometimes fail due to too many calls in a short period of time.</li>
+                        <li>If you face a problem where the application is taking too much time (especially when fetching Intraday pricing information), please be patient if you have selected too many currencies.</li>
+
+                        </ul></span>
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                    
+                        <!-- /.panel-heading -->
+                      
+                    <!-- /.panel -->
+                    
+                <!-- /.col-lg-8 -->
+                <div class="col-lg-5">
+                    
+                    <!-- /.panel -->
+                   <!--  <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Heatmap
+                        </div>
+                        <div class="panel-body">
+                           <div id="myDiv"></div>
+                                <script>
+                                
+                                </script>
+                            
+                        </div> -->
+                      
+                    </div>
+                    <!-- /.panel -->
+                       
+                        <!-- /.panel-footer -->
+                    </div>
+                    <!-- /.panel .chat-panel -->
+                </div>
+                <!-- /.col-lg-4 -->
+            </div>
+            <!-- /.row -->
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+  
+     <li class="timeline-inverted" id='sample1'  style="visibility:hidden;">
+                                    <div class="timeline-badge info"><i class="fa fa-check"></i>
+                                    </div>
+                                    <div class="timeline-panel">
+                                        <div class="timeline-heading">
+                                            <h4 class="timeline-title">Lorem ipsum dolor</h4>
+                                        </div>
+                                        <div class="timeline-body">
+                                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Autem dolorem quibusdam, tenetur commodi provident cumque magni voluptatem libero, quis rerum. Fugiat esse debitis optio, tempore. Animi officiis alias, officia repellendus.
+                                            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Laudantium maiores odit qui est tempora eos, nostrum provident explicabo dignissimos debitis vel! Adipisci eius voluptates, ad aut recusandae minus eaque facere.</p>
+                                            <hr>
+                                            <small>
+                                    <cite title="Source Title">- Source Title</cite>
+                                </small>
+                                        </div>
+                                    </div>
+                                </li>
+                                
+                                
+                                <li id='sample2'  style="visibility:hidden;">
+                                    <div class="timeline-badge info"><i class="fa fa-check"></i>
+                                    </div>
+                                    <div class="timeline-panel">
+                                        <div class="timeline-heading">
+                                            <h4 class="timeline-title">Lorem ipsum dolor</h4>
+                                        </div>
+                                        <div class="timeline-body">
+                                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nobis minus modi quam ipsum alias at est molestiae excepturi delectus nesciunt, quibusdam debitis amet, beatae consequuntur impedit nulla qui! Laborum, atque.</p>
+                                            <hr>
+                                            <small>
+                                    <cite title="Source Title">- Source Title</cite>
+                                </small>
+                                        </div>
+                                    </div>
+                                </li>
+
+    <!-- jQuery -->
+    <script src="{{ url_for('static',filename='scripts/jquery.min.js') }}"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="{{ url_for('static',filename='scripts/bootstrap.min.js') }}"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="{{ url_for('static',filename='scripts/metisMenu.min.js') }}"></script>
+
+    <!-- Morris Charts JavaScript -->
+    <script src="{{ url_for('static',filename='scripts/raphael.min.js') }}"></script>
+    <!-- <script src="{{ url_for('static',filename='scripts/morris.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='scripts/morris-data.js') }}"></script>
+     --><script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Custom Theme JavaScript -->
+    <script src="{{ url_for('static',filename='scripts/sb-admin-2.js') }}"></script>
+   <!--  <script>
+    document.getElementById("BTC").checked = true;
+    // document.getElementById("daily").checked = true;
+    var cur = ["BTC"];
+    var time_range = ["daily"]
+    var date = 0
+    // var active = "time"
+    function anomaly() {
+        console.log("hey")
+        console.log(cur)
+        // console.log(time_range)
+        $.ajax({
+          url: '/basic',
+          data: JSON.stringify({'cur[]':cur, 'time_range[]':time_range}),
+          dataType : 'json',
+          contentType: 'application/json',
+          crossDomain: true,
+          type: 'POST',
+          beforeSend: function() {
+            $(".loaderDiv").show();
+            },
+          success: function(response) {
+                $(".loaderDiv").hide();
+                console.log(response);
+                // var op = JSON.parse(response);
+                var anomaly = response['anomaly'];
+                var s = Array(anomaly['x'].length).fill(2)
+                var c = Array(anomaly['x'].length).fill('#000000')
+                // console.log(anomaly['x'].length)
+                var s2 = Array(anomaly['x'].length).fill(5)
+                var c2 = Array(anomaly['x'].length).fill('#000000')
+                for (i = 0; i < anomaly['x_anomaly'].length; i++) { 
+                    s2[anomaly['x_anomaly'][i]] = 10;
+                    c2[anomaly['x_anomaly'][i]] = '#ff0000';
+                }
+                var trace1 = {y: anomaly['y'], x:anomaly['x'], mode:'markers', marker: {size: s, color: c}, name: 'Data' }
+                var trace2 = {y: anomaly['y'], x:anomaly['x'], mode:'markers', marker: {size: s2, color: c2}, hoverinfo: 'none',
+  showlegend: false}
+                var trace3 = {y: anomaly['y_av'], x:anomaly['x'], mode:'line', name: 'Mean' }
+                var data = [trace1,trace2, trace3];
+
+                var layout = {
+                    xaxis: {autorange: true, rangeslider: {}, type: 'date'},
+                  // title: 'Scatter Plot with a Color Dimension'
+                };
+
+                Plotly.newPlot('chart', data, layout);
+
+                var myPlot = document.getElementById('chart')
+
+                myPlot.on('plotly_click', function(data){
+                  console.log(data.points[0].x,data.points[0].y)
+                  date = data.points[0].x
+                  articles.call();
+                });
+
+                                // Plotly.newPlot('myDiv', op);
+                },
+        error: function(error) {
+            console.log(error);
+            }
+
+        });
+      }
+    function articles() {
+        console.log("articles called")
+        console.log(cur)
+        $.ajax({ url: "/get_articles",
+        data: JSON.stringify({'cur[]':[cur], 'time[]':[date]}),
+          datatype : 'json',
+          contentType: 'application/json',
+          crossDomain: true,
+          type: 'POST',
+          beforeSend: function() {
+            $(".loaderDiv").show();
+            
+            },
+        success: function(response){
+            $(".loaderDiv").hide();
+            document.getElementById("timeline").innerHTML = "";
+            i=2;
+            response=JSON.parse(response)
+          for (var j = 0; j < response.length; j++) {
+                
+                //Do something
+            
+              if (i==1)
+              {
+                i=2;
+              }
+              else
+              {
+                i=1;
+              }
+              console.log('#sample'+i)
+              clone=$("#sample"+i).clone()
+              clone.removeAttr('id')
+              clone.removeAttr('style')
+              clone.find('h4')[0].innerHTML='<a href='+response[j]['link']+' target="blank">'+response[j]['title']+'</a>'
+              clone.find('p')[0].innerHTML=response[j]['content'].split(/\s+/).slice(0,50).join(" ")+'...';
+              clone.find('cite')[0].innerHTML='- '+response[j]['time']
+              $('#timeline').append(clone)
+            }
+        }});
+   
+    }
+$( '#cur a' ).on( 'click', function( event ) {
+  console.log("getting called")
+    var $target = $( event.currentTarget ),
+        val = $target.attr( 'data-value' ),
+        $inp = $target.find( 'input' ),
+        idx;
+    // console.log(val)
+    if (Object.keys(cur).length === 0 ) {
+       // time_range[val] = $inp;
+       cur.push(val)
+       setTimeout( function() { $inp.prop( 'checked', true ) }, 0);
+    } else {
+        loc = cur[Object.keys(cur)[0]];
+        console.log("loc " + loc)
+        document.getElementById(loc).checked = false;
+        idx = cur.indexOf(loc)
+        if (idx>-1) {cur.splice(idx,1);}
+        // console.log(time_range)
+        setTimeout( function() { $inp.prop( 'checked', true ) }, 0);
+        // loc.attr('checked', false);
+        // delete time_range.loc
+        cur.push(val);
+        console.log(cur)
+    }
+    anomaly.call();
+    // time_series.call();
+    // correlation.call();
+    // if (active == "time") {time_series.call();}
+    //     else {correlation.call();}
+    // console.log(val);
+    return false;
+    });
+    anomaly.call();
+
+    </script> -->
+</body>
+
+</html>
